@@ -80,13 +80,16 @@ void send_message (char *msg, int userid)
 {
 	pthread_mutex_lock (&clients_mutex);
 	
+	int c = 0;
+	
 	for (int i = 0; i < MAX_CLIENTS; i++)
-		if (clients [i] && clients [i] -> userid != userid)
-			if (send (clients [i] -> sockfd, msg, 1000, 0))
-			{
-				perror ("ERROR: write failed.");
-				break;
-			}
+		if (clients [i])
+			if (clients [i] -> userid != userid)
+				if (send (clients [i] -> sockfd, msg, 1000, 0) < 0)
+				{
+					perror ("send");
+					break;
+				}
 	
 	pthread_mutex_unlock (&clients_mutex);
 }
@@ -201,17 +204,36 @@ struct sockaddr_in connect_to_socket (int *sockfd)
 	return server_addr;
 }
 
+void print_client_details ()
+{
+	for (int i = 0; i < MAX_CLIENTS; i++)
+	{
+		printf ("%d:\n", i);
+		if (clients [i])
+		{
+			printf ("Sockfd: %d\n", clients [i] -> sockfd);
+			printf ("UserID: %d\n", clients [i] -> userid);
+			printf ("Name: %s\n", clients [i] -> name);
+		}
+		else
+			printf ("Client is NULL.\n");
+	}
+}
+
 int main ()
 {
 	int sockfd, new_fd;
 	struct sockaddr_in server_addr, client_addr;
 	pthread_t tid;
 	socklen_t sin_size;
-	char s [INET6_ADDRSTRLEN], IP [INET6_ADDRSTRLEN];
 	int rv;
 	
 	server_addr = connect_to_socket (&sockfd);
-
+	
+	//Initialize clients array
+	for (int i = 0; i < MAX_CLIENTS; i++)
+		clients [i] = NULL;
+		
 	//Failed to listen
 	if (listen (sockfd, BACKLOG) == -1)
 	{
@@ -219,7 +241,7 @@ int main ()
 		exit (1);
 	}
 	
-	printf ("Server: waiting for connection: \n");
+	printf ("=== WELCOME TO THE CHATROOM ===\n");
 	
 	while (1)
 	{
@@ -236,6 +258,7 @@ int main ()
 		//Maximum client count reached
 		if ((client_cnt + 1) == MAX_CLIENTS)
 		{
+		
 			printf ("Maximum clients reached. Can't connect!!!\n");
 			printf ("Rejected: %s: %d\n", inet_ntoa (client_addr.sin_addr), client_addr.sin_port);
 			close (new_fd);
@@ -248,6 +271,8 @@ int main ()
 		client -> userid = userid++;
 		
 		queue_add (client);
+		//print_client_details ();
+		
 		pthread_create (&tid, NULL, &handle_client, (void *)client);
 		
 		sleep (1);
