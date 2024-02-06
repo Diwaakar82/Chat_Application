@@ -80,16 +80,77 @@ void send_message (char *msg, int userid)
 {
 	pthread_mutex_lock (&clients_mutex);
 	
-	int c = 0;
+	int c = msg [0] - '0', exit = 0;
+	msg++;
 	
-	for (int i = 0; i < MAX_CLIENTS; i++)
-		if (clients [i])
-			if (clients [i] -> userid != userid)
-				if (send (clients [i] -> sockfd, msg, 1000, 0) < 0)
+	switch (c)
+	{
+		case 1:
+			for (int i = 0; i < MAX_CLIENTS; i++)
+				if (clients [i] && clients [i] -> userid == userid)
 				{
-					perror ("send");
+					strcpy (clients [i] -> name, msg);
 					break;
 				}
+			break;
+		
+		case 2:
+			int sockfd;
+			
+			//Find socket requested user
+			for (int i = 0; i < MAX_CLIENTS; i++)
+				if (clients [i] && clients [i] -> userid == userid)
+				{
+					sockfd = clients [i] -> sockfd;
+					break;
+				}
+			
+			//Send all active client names
+			if (send (sockfd, "Active users!!!\n", 20, 0) < 0)
+			{
+				perror ("send");
+				break;
+			}
+			
+			for (int i = 0; i < MAX_CLIENTS; i++)
+				if (clients [i] && clients [i] -> userid != userid)
+					if (send (sockfd, clients [i] -> name, 1000, 0) < 0)
+					{
+						perror ("send");
+						break;
+					}
+					
+			if (send (sockfd, "done", 5, 0) < 0)
+			{
+				perror ("send");
+				break;
+			}
+			break;
+		
+		case 3:
+		
+			break;
+			
+		case 4:
+			for (int i = 0; i < MAX_CLIENTS; i++)
+				if (clients [i] && clients [i] -> userid != userid)
+					if (send (clients [i] -> sockfd, msg, 1000, 0) < 0)
+					{
+						perror ("send");
+						break;
+					}
+			break;
+		default:
+			printf ("Invalid operation.\n");
+	}
+	
+	/*for (int i = 0; i < MAX_CLIENTS; i++)
+		if (clients [i] && clients [i] -> userid != userid)
+			if (send (clients [i] -> sockfd, msg, 1000, 0) < 0)
+			{
+				perror ("send");
+				break;
+			}*/
 	
 	pthread_mutex_unlock (&clients_mutex);
 }
@@ -128,7 +189,7 @@ void *handle_client (void *arg)
 		strcpy (client -> name, name);
 		sprintf (buffer, "%s has joined the chat!!!\n", name);
 		printf ("%s\n", buffer);
-		send_message (buffer, client -> userid);
+		//send_message (buffer, client -> userid);
 	}
 	
 	bzero (buffer, BUFFER_SIZE);
@@ -140,19 +201,19 @@ void *handle_client (void *arg)
 			
 		int numbytes = recv (client -> sockfd, buffer, BUFFER_SIZE, 0);
 		
-		if (numbytes > 0 && strlen (buffer) > 0)
+		if (numbytes == 0 || buffer [0] == '4')
 		{
-			send_message (buffer, client -> userid);
-			
-			str_trim (buffer, sizeof (buffer));
-			printf ("%s -> %s\n", buffer, client -> name);
-		}
-		else if (numbytes == 0 || strstr (buffer, "exit"))
-		{
-			sprintf (buffer, "%s has left!!!\n", client -> name);
-			printf ("%s", buffer);
+			sprintf (buffer, "4%s has left!!!\n", client -> name);
+			printf ("%s", buffer + 1);
 			send_message (buffer, client -> userid);
 			leave_flag = 1;
+		}
+		else if (numbytes > 0 && strlen (buffer) > 0)
+		{
+			str_trim (buffer, sizeof (buffer));
+			send_message (buffer, client -> userid);
+			
+			printf ("%s -> %s\n", buffer, client -> name);
 		}
 		else
 		{

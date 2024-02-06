@@ -50,6 +50,8 @@ void receive_message ()
 		
 		if (numbytes > 0)
 		{
+			if (strstr (message, "done"))
+				break;
 			printf ("%s\n", message);
 			//str_overwrite_stdout ();
 		}
