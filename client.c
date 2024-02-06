@@ -18,13 +18,6 @@ sig_atomic_t flag = 0;
 int sockfd = 0;
 char name [20];
 
-//Print > at start of line
-void str_overwrite_stdout ()
-{
-	printf ("> ");
-	fflush (stdout);
-}
-
 //Trim to one line
 void str_trim (char* str, int length) 
 {
@@ -53,7 +46,6 @@ void receive_message ()
 			if (strstr (message, "done"))
 				break;
 			printf ("%s\n", message);
-			//str_overwrite_stdout ();
 		}
 		else if (numbytes == 0)
 			break;
@@ -73,7 +65,7 @@ void send_message ()
 	while (1)
 	{
 		int choice, exit = 0;
-		printf ("\n1. Update name.\n2. List active users\n3. Send message to user.\n4. Exit\nWhat do you want to do\n");
+		printf ("\n1. Update name.\n2. List active users\n3. Send message to user.\n4. Exit\nWhat do you want to do?\n");
 		scanf ("%d", &choice);
 		
 		switch (choice)
@@ -114,7 +106,7 @@ void send_message ()
 		
 		if (exit)
 			break;
-		//str_overwrite_stdout ();
+			
 /*		fgets (msg, LENGTH, stdin);*/
 /*		str_trim (msg, LENGTH);*/
 /*		*/
