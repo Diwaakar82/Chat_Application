@@ -39,32 +39,6 @@ void str_trim (char* str, int length)
   	}
 }
 
-//Send message
-void send_message ()
-{
-	char msg [LENGTH];
-	char buffer [LENGTH + 22];
-	
-	while (1)
-	{
-		str_overwrite_stdout ();
-		fgets (msg, LENGTH, stdin);
-		str_trim (msg, LENGTH);
-		
-		if (strstr (msg, "exit"))
-			break;
-		else
-		{
-			sprintf (buffer, "%s: %s\n", name, msg);
-			send (sockfd, buffer, strlen (buffer), 0);
-		}
-		
-		bzero (msg, LENGTH);
-		bzero (buffer, LENGTH + 20);
-	}
-	flag = 1;
-}
-
 //Receive message
 void receive_message ()
 {
@@ -77,13 +51,84 @@ void receive_message ()
 		if (numbytes > 0)
 		{
 			printf ("%s\n", message);
-			str_overwrite_stdout ();
+			//str_overwrite_stdout ();
 		}
 		else if (numbytes == 0)
 			break;
 		
 		memset (message, 0, LENGTH);
 	}
+}
+
+
+//Send message
+void send_message ()
+{
+	char msg [LENGTH];
+	char new_name [20];
+	char buffer [2 * LENGTH];
+	
+	while (1)
+	{
+		int choice, exit = 0;
+		printf ("\n1. Update name.\n2. List active users\n3. Send message to user.\n4. Exit\nWhat do you want to do\n");
+		scanf ("%d", &choice);
+		
+		switch (choice)
+		{
+			case 1:
+				printf ("Enter new name: ");
+				scanf ("%s", new_name);
+				
+				sprintf (buffer, "1%s", new_name);
+				send (sockfd, buffer, strlen (buffer), 0);
+				strcpy (name, new_name);
+				break;
+				
+			case 2:
+				buffer [0] = '2';
+				buffer [1] = '\0';
+				
+				send (sockfd, buffer, strlen (buffer), 0);
+				receive_message ();
+				break;
+				
+			case 3:
+				printf ("Enter whom to message: ");
+				scanf ("%s", new_name);
+				
+				getchar ();
+				printf ("Enter message: ");
+				fgets (msg, LENGTH, stdin);
+				str_trim (msg, LENGTH);
+				
+				sprintf (buffer, "3%s %s: %s\n", new_name, name, msg);
+				send (sockfd, buffer, strlen (buffer), 0);
+				break;
+				
+			case 4:
+				exit = 1;
+		}
+		
+		if (exit)
+			break;
+		//str_overwrite_stdout ();
+/*		fgets (msg, LENGTH, stdin);*/
+/*		str_trim (msg, LENGTH);*/
+/*		*/
+/*		if (strstr (msg, "exit"))*/
+/*			break;*/
+/*		else*/
+/*		{*/
+/*			sprintf (buffer, "%s: %s\n", name, msg);*/
+/*			send (sockfd, buffer, strlen (buffer), 0);*/
+/*		}*/
+		
+		bzero (new_name, 20);
+		bzero (msg, LENGTH);
+		bzero (buffer, LENGTH + 20);
+	}
+	flag = 1;
 }
 
 int main ()
