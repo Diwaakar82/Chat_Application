@@ -60,7 +60,6 @@ void receive_message ()
 void read_message ()
 {
 	char message [LENGTH];
-	
 	int numbytes = recv (sockfd, message, LENGTH, 0);
 	
 	if (numbytes > 0)
@@ -79,6 +78,7 @@ void send_message ()
 		int choice, exit = 0;
 		printf ("\n1. Update name.\n2. List active users\n3. Send message to user.\n4. Exit\nWhat do you want to do?\n");
 		scanf ("%d", &choice);
+		getchar ();
 		
 		switch (choice)
 		{
@@ -94,8 +94,7 @@ void send_message ()
 			case 2:
 				buffer [0] = '2';
 				buffer [1] = '\0';
-				
-				//printf ("Buffer:%s\nSize:%d\n", buffer, strlen (buffer));
+
 				send (sockfd, buffer, strlen (buffer), 0);
 				read_message ();
 				break;

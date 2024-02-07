@@ -115,7 +115,10 @@ void send_message (char *msg, int userid)
 					strcat (active_clients, clients [i] -> name);
 					strcat (active_clients, "\n");
 				}
-
+			
+			if (strlen (active_clients) == strlen ("\nActive users!!!\n"))
+				strcpy (active_clients, "No other active users!!!");
+				
 			if (send (sockfd, active_clients, strlen (active_clients), 0) < 0)
 			{
 				perror ("send");
