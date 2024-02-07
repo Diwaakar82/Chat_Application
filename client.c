@@ -45,6 +45,7 @@ void receive_message ()
 		{
 			if (strstr (message, "done"))
 				break;
+				
 			printf ("%s\n", message);
 		}
 		else if (numbytes == 0)
@@ -54,6 +55,17 @@ void receive_message ()
 	}
 }
 
+
+//Receive message
+void read_message ()
+{
+	char message [LENGTH];
+	
+	int numbytes = recv (sockfd, message, LENGTH, 0);
+	
+	if (numbytes > 0)
+		printf ("%s\n", message);	
+}
 
 //Send message
 void send_message ()
@@ -83,8 +95,9 @@ void send_message ()
 				buffer [0] = '2';
 				buffer [1] = '\0';
 				
+				//printf ("Buffer:%s\nSize:%d\n", buffer, strlen (buffer));
 				send (sockfd, buffer, strlen (buffer), 0);
-				receive_message ();
+				read_message ();
 				break;
 				
 			case 3:
@@ -106,17 +119,6 @@ void send_message ()
 		
 		if (exit)
 			break;
-			
-/*		fgets (msg, LENGTH, stdin);*/
-/*		str_trim (msg, LENGTH);*/
-/*		*/
-/*		if (strstr (msg, "exit"))*/
-/*			break;*/
-/*		else*/
-/*		{*/
-/*			sprintf (buffer, "%s: %s\n", name, msg);*/
-/*			send (sockfd, buffer, strlen (buffer), 0);*/
-/*		}*/
 		
 		bzero (new_name, 20);
 		bzero (msg, LENGTH);

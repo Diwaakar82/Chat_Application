@@ -96,6 +96,8 @@ void send_message (char *msg, int userid)
 			break;
 		
 		case 2:
+			char active_clients [BUFFER_SIZE];
+			
 			//Find socket requested user
 			for (int i = 0; i < MAX_CLIENTS; i++)
 				if (clients [i] && clients [i] -> userid == userid)
@@ -104,22 +106,17 @@ void send_message (char *msg, int userid)
 					break;
 				}
 			
-			//Send all active client names
-			if (send (sockfd, "Active users!!!\n", 20, 0) < 0)
-			{
-				perror ("send");
-				break;
-			}
+			bzero (active_clients, BUFFER_SIZE);
+			strcat (active_clients, "\nActive users!!!\n");
 			
 			for (int i = 0; i < MAX_CLIENTS; i++)
 				if (clients [i] && clients [i] -> userid != userid)
-					if (send (sockfd, clients [i] -> name, 1000, 0) < 0)
-					{
-						perror ("send");
-						break;
-					}
-					
-			if (send (sockfd, "done", 5, 0) < 0)
+				{
+					strcat (active_clients, clients [i] -> name);
+					strcat (active_clients, "\n");
+				}
+
+			if (send (sockfd, active_clients, strlen (active_clients), 0) < 0)
 			{
 				perror ("send");
 				break;
@@ -335,11 +332,8 @@ int main ()
 		client -> userid = userid++;
 		
 		queue_add (client);
-		//print_client_details ();
 		
 		pthread_create (&tid, NULL, &handle_client, (void *)client);
-		
-		sleep (1);
 	}
 	close (sockfd);
 	
