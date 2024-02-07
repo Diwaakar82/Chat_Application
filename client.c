@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 #include <pthread.h>
 
-#define PORT 8080			//Port used for connections
+#define PORT 8080			//Port used for connections 
 #define LENGTH 1000
 
 sig_atomic_t flag = 0;

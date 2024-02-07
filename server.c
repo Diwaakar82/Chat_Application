@@ -81,6 +81,7 @@ void send_message (char *msg, int userid)
 	pthread_mutex_lock (&clients_mutex);
 	
 	int c = msg [0] - '0', exit = 0;
+	int sockfd;
 	msg++;
 	
 	switch (c)
@@ -95,8 +96,6 @@ void send_message (char *msg, int userid)
 			break;
 		
 		case 2:
-			int sockfd;
-			
 			//Find socket requested user
 			for (int i = 0; i < MAX_CLIENTS; i++)
 				if (clients [i] && clients [i] -> userid == userid)
@@ -128,7 +127,22 @@ void send_message (char *msg, int userid)
 			break;
 		
 		case 3:
-		
+			char receiver [20], *end = strchr (msg, ' ');
+			*end = '\0';
+			strcpy (receiver, msg);
+			
+			msg = end + 1;
+			*end = ' ';
+			
+			for (int i = 0; i < MAX_CLIENTS; i++)
+				if (clients [i] && strstr (clients [i] -> name, receiver))
+					sockfd = clients [i] -> sockfd;
+					
+			if (send (sockfd, msg, 1000, 0) < 0)
+			{
+				perror ("send");
+				break;
+			}
 			break;
 			
 		case 4:
@@ -143,14 +157,6 @@ void send_message (char *msg, int userid)
 		default:
 			printf ("Invalid operation.\n");
 	}
-	
-	/*for (int i = 0; i < MAX_CLIENTS; i++)
-		if (clients [i] && clients [i] -> userid != userid)
-			if (send (clients [i] -> sockfd, msg, 1000, 0) < 0)
-			{
-				perror ("send");
-				break;
-			}*/
 	
 	pthread_mutex_unlock (&clients_mutex);
 }
@@ -189,7 +195,6 @@ void *handle_client (void *arg)
 		strcpy (client -> name, name);
 		sprintf (buffer, "%s has joined the chat!!!\n", name);
 		printf ("%s\n", buffer);
-		//send_message (buffer, client -> userid);
 	}
 	
 	bzero (buffer, BUFFER_SIZE);
@@ -212,8 +217,6 @@ void *handle_client (void *arg)
 		{
 			str_trim (buffer, sizeof (buffer));
 			send_message (buffer, client -> userid);
-			
-			printf ("%s -> %s\n", buffer, client -> name);
 		}
 		else
 		{
