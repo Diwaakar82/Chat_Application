@@ -10,11 +10,12 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <signal.h>
 
 #define PORT 8080			//Port used for connections 
 #define LENGTH 1000
 
-sig_atomic_t flag = 0;
+volatile sig_atomic_t flag = 0;
 int sockfd = 0;
 char name [20];
 
@@ -30,6 +31,10 @@ void str_trim (char* str, int length)
       		break;
     	}
   	}
+}
+
+void catch_ctrl_c_and_exit(int sig) {
+    flag = 1;
 }
 
 //Receive message
@@ -60,10 +65,14 @@ void receive_message ()
 void read_message ()
 {
 	char message [LENGTH];
+	
+	memset (message, 0, LENGTH);
 	int numbytes = recv (sockfd, message, LENGTH, 0);
 	
 	if (numbytes > 0)
-		printf ("%s\n", message);	
+		printf ("%s\n", message);
+		
+	memset (message, 0, LENGTH);	
 }
 
 //Send message
@@ -123,13 +132,15 @@ void send_message ()
 		bzero (msg, LENGTH);
 		bzero (buffer, LENGTH + 20);
 	}
-	flag = 1;
+	catch_ctrl_c_and_exit (2);
 }
 
 int main ()
 {
 	char *ip = "127.0.0.1";
 	struct sockaddr_in server_addr;
+	
+	signal(SIGINT, catch_ctrl_c_and_exit);
 	
 	printf ("Enter your name: ");
 	fgets (name, 20, stdin);

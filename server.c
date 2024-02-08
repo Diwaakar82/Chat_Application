@@ -118,7 +118,8 @@ void send_message (char *msg, int userid)
 			
 			if (strlen (active_clients) == strlen ("\nActive users!!!\n"))
 				strcpy (active_clients, "No other active users!!!");
-				
+			
+			active_clients [strlen (active_clients)] = '\0';
 			if (send (sockfd, active_clients, strlen (active_clients), 0) < 0)
 			{
 				perror ("send");
@@ -293,11 +294,14 @@ int main ()
 	int rv;
 	
 	server_addr = connect_to_socket (&sockfd);
+	signal (SIGPIPE, SIG_IGN);
 	
 	//Initialize clients array
 	for (int i = 0; i < MAX_CLIENTS; i++)
 		clients [i] = NULL;
-		
+	
+	signal(SIGPIPE, SIG_IGN);
+	
 	//Failed to listen
 	if (listen (sockfd, BACKLOG) == -1)
 	{
