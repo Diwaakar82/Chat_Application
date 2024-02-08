@@ -107,19 +107,19 @@ void send_message (char *msg, int userid)
 				}
 			
 			bzero (active_clients, BUFFER_SIZE);
-			strcat (active_clients, "\nActive users!!!\n");
+			strcat (active_clients, "\nActive users!!!");
 			
 			for (int i = 0; i < MAX_CLIENTS; i++)
 				if (clients [i] && clients [i] -> userid != userid)
 				{
-					strcat (active_clients, clients [i] -> name);
 					strcat (active_clients, "\n");
+					strcat (active_clients, clients [i] -> name);	
 				}
 			
-			if (strlen (active_clients) == strlen ("\nActive users!!!\n"))
-				strcpy (active_clients, "No other active users!!!");
-			
-			active_clients [strlen (active_clients)] = '\0';
+			strcat (active_clients, "\n\0");
+			if (strlen (active_clients) == strlen ("\nActive users!!!"))
+				strcpy (active_clients, "No other active users!!!\0");
+
 			if (send (sockfd, active_clients, strlen (active_clients), 0) < 0)
 			{
 				perror ("send");
