@@ -117,7 +117,7 @@ void send_message (char *msg, int userid)
 				}
 			
 			strcat (active_clients, "\n\0");
-			if (strlen (active_clients) == strlen ("\nActive users!!!"))
+			if (strlen (active_clients) == strlen ("\nActive users!!!\n\0"))
 				strcpy (active_clients, "No other active users!!!\0");
 
 			if (send (sockfd, active_clients, strlen (active_clients), 0) < 0)
