@@ -105,7 +105,7 @@ void send_message ()
 				buffer [1] = '\0';
 
 				send (sockfd, buffer, strlen (buffer), 0);
-				read_message ();
+				sleep (1);
 				break;
 				
 			case 3:
