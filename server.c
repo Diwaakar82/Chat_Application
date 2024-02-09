@@ -10,7 +10,6 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <pthread.h>
-#include <signal.h>
 
 #define PORT 8080			//Port used for connections
 #define BACKLOG 10			//Pending connections queue can hold
@@ -294,13 +293,10 @@ int main ()
 	int rv;
 	
 	server_addr = connect_to_socket (&sockfd);
-	signal (SIGPIPE, SIG_IGN);
 	
 	//Initialize clients array
 	for (int i = 0; i < MAX_CLIENTS; i++)
 		clients [i] = NULL;
-	
-	signal(SIGPIPE, SIG_IGN);
 	
 	//Failed to listen
 	if (listen (sockfd, BACKLOG) == -1)

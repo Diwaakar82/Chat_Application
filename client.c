@@ -10,7 +10,6 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <pthread.h>
-#include <signal.h>
 
 #define PORT 8080			//Port used for connections 
 #define LENGTH 1000
@@ -31,10 +30,6 @@ void str_trim (char* str, int length)
       		break;
     	}
   	}
-}
-
-void catch_ctrl_c_and_exit(int sig) {
-    flag = 1;
 }
 
 //Receive message
@@ -139,8 +134,6 @@ int main ()
 {
 	char *ip = "127.0.0.1";
 	struct sockaddr_in server_addr;
-	
-	signal(SIGINT, catch_ctrl_c_and_exit);
 	
 	printf ("Enter your name: ");
 	fgets (name, 20, stdin);
